@@ -1,6 +1,6 @@
 # SUPRT — escopo de produto e operação
 
-**Versão 1.0 · 25 de setembro de 2026 · São Paulo como mercado piloto**  
+**Versão 1.1 · 25 de setembro de 2026 · Município de São Paulo**  
 **Status:** especificação proposta para decisão e desenvolvimento; não descreve funções já prontas.
 
 ## 1. Visão e promessa
@@ -22,15 +22,15 @@ Três superfícies do mesmo produto: **app do cliente**, **app ou modo do presta
 
 ## 3. Público, geografia e catálogo
 
-**Piloto:** um conjunto pequeno e contíguo de bairros em São Paulo, com prestadores cadastrados antes da abertura ao público. Expandir por células de cobertura conforme taxa de aceite, tempo de chegada e qualidade. Fora da área, explicar indisponibilidade e oferecer lista de espera ou telefone de apoio, sem aceitar pedido que não se consegue atender.
+**Abrangência planejada:** todo o município de São Paulo, com uso nas diferentes zonas desde o início se houver ajudantes habilitados disponíveis. A divulgação inicial pode ser coordenada pelos três integrantes do projeto, incluindo Brasilândia, Zona Leste e a região da Vila Mariana; confirmar endereços e responsabilidades reais da equipe. Divulgação em uma zona não significa cobertura garantida nela: o app mostra disponibilidade efetiva conforme pessoas online, tipo de serviço e tempo de rota. Se ninguém puder atender, explicar isso imediatamente, ampliar a busca conforme regra e oferecer alternativa de suporte, sem prometer chegada impossível. A operação pode ser ativada por etapas para reduzir risco, mantendo o objetivo de cobertura municipal.
 
-**Lançamento:** troca do pneu pelo estepe do cliente; carga auxiliar de bateria; guincho de automóvel de passeio com destino informado. **Etapa posterior:** calibragem/reparo móvel de pneu, troca/fornecimento de bateria, pane seca, chaveiro automotivo, motos, utilitários, veículos elétricos e atendimentos programados. Cada serviço tem requisitos, limites e preço próprios. Não oferecer reparo em via perigosa quando o cenário exige remoção segura.
+**Lançamento:** troca do pneu pelo estepe do cliente, inclusive quando o próprio cliente fornece estepe, macaco e chave de roda; carga auxiliar de bateria por pessoa equipada; guincho de automóvel de passeio por profissional/empresa habilitado com destino informado. **Etapa posterior:** calibragem/reparo móvel de pneu, troca/fornecimento de bateria, pane seca, chaveiro automotivo, motos, utilitários, veículos elétricos e atendimentos programados. Cada serviço tem requisitos, limites e preço próprios. Não oferecer reparo em via perigosa quando o cenário exige remoção segura.
 
 ### Perguntas condicionais do pedido
 
 | Tipo | Perguntas essenciais | Regra de compatibilidade |
 | --- | --- | --- |
-| Pneu | Qual roda? Apenas ar, reparo ou troca? Tem estepe utilizável? Tem macaco e chave? Travamento/porca antifurto? Modelo e tamanho do veículo? Foto? Local seguro? | Sem estepe, não ofertar “troca pelo estepe”; oferecer reparo móvel habilitado ou guincho. Ferramentas podem ser trazidas pelo prestador. |
+| Pneu | Qual roda? Apenas ar, reparo ou troca? Tem estepe? Sabe se o estepe está cheio/utilizável (sim/não/não sei)? Tem macaco? Tem chave de roda? Há parafuso antifurto e chave dele? Modelo/tamanho do veículo? Foto opcional? Local seguro? | Se não há estepe utilizável, não ofertar “troca pelo estepe”; indicar reparo móvel habilitado ou guincho. Se faltam ferramentas, oferecer apenas a ajudantes que declararam trazê-las. “Não sei” sobre a pressão não significa “cheio”: ajudante confirma condição antes de concluir. |
 | Bateria | Não dá partida? Luzes acendem? Precisa de carga auxiliar, diagnóstico ou bateria nova? Modelo/ano, tipo de bateria e posição/acesso? | Venda/troca de bateria exige estoque, preço da peça separado, compatibilidade e garantia. |
 | Guincho | Veículo liga/anda? Câmbio, tração, peso, altura, rodas travadas, avaria/acidente? Origem, destino, acesso em garagem/subsolo e pessoas no local? | Confirmar tipo/capacidade de guincho, distância, pedágios, acessos e condições de segurança. |
 | Outros | Tipo de ocorrência, texto, fotos, localização e risco. | Triagem por operador; não roteamento automático de serviço desconhecido. |
@@ -68,7 +68,7 @@ Tela de situação urgente antes do formulário: se há feridos, risco de incên
 
 ### Cliente
 
-1. Abre app → escolhe serviço → responde perguntas condicionais → informa veículo, fotos e localização confirmada.
+1. Abre app → toca em um serviço grande e legível → responde somente às perguntas necessárias → confirma localização em um toque (ou ajusta no mapa). Fotos e descrição são opcionais para troca simples; veículo pode ser cadastrado depois. Para pneu, apresentar perguntas separadas: “Você tem estepe?”, “O estepe está cheio?”, “Você tem macaco?” e “Você tem chave de roda?”, cada uma com “Sim / Não / Não sei” quando fizer sentido.
 2. Sistema verifica área, categoria, risco, prestadores online e capacidade. Se houver oferta, exibe composição do preço, ETA **estimado**, o que está incluído, exclusões, política de cancelamento e forma de pagamento.
 3. Cliente autoriza/captura pagamento conforme desenho do provedor; confirma solicitação. Antes de confirmação, nenhuma cobrança definitiva.
 4. Tela de busca com estado claro e opção de cancelar; após aceite, nome/foto/avaliação e identificação do prestador, ETA, rota aproximada, chat/chamada protegidos e compartilhamento do atendimento.
@@ -91,7 +91,7 @@ Painel com mapa de demanda e prestadores disponíveis, fila sem aceite, reatribu
 
 **Pedido:** `rascunho → cotado → aguardando_pagamento/autorização → procurando → aceito → a_caminho → chegou → em_serviço → concluído`. Saídas alternativas: `sem_cobertura`, `sem_prestador`, `pagamento_falhou`, `expirado`, `cancelado_cliente`, `cancelado_prestador`, `revisão_operador`, `disputa` e `reembolso`. Cada transição tem ator autorizado, horário e motivo; nunca confiar apenas no status enviado pelo celular.
 
-**Despacho proposto:** 1) filtrar prestadores aprovados, online, sem serviço simultâneo, com equipamento/veículo compatíveis e localização recente; 2) buscar candidatos em raio progressivo via consulta geoespacial; 3) estimar duração real por rota e trânsito para finalistas; 4) ordenar por ETA, disponibilidade, adequação e qualidade, com controles de distribuição justa; 5) enviar ofertas por pequenos lotes com prazo curto e ampliar raio/operador quando ninguém aceitar. Nunca mostrar mapa com posição exata de todos os prestadores ao público.
+**Despacho proposto:** 1) filtrar ajudantes/prestadores cadastrados e aprovados para aquela categoria, que ativaram “Disponível”, aceitaram receber notificações, estão sem serviço simultâneo e têm localização recente; 2) buscar candidatos inicialmente em até **10 km em linha reta** do ponto confirmado via consulta geoespacial; 3) checar rota, trânsito e tempo dos finalistas; 4) ordenar por ETA e capacidade, não só por distância: alguém a 500 m do outro lado de uma via pode levar mais tempo; 5) enviar notificação/oferta em pequenos lotes e permitir que **o primeiro aceite válido reservado no servidor** fique com o atendimento; se ninguém aceitar, ampliar a busca com novo ETA e preço aprovados pelo cliente. Nunca notificar todo usuário que apenas instalou o app, nem mostrar a posição exata de todos ao público. O cliente escolhe se também quer ser ajudante, conclui cadastro simples e verificação, e só então pode ficar disponível.
 
 Usar **bloqueio transacional no servidor** para que dois aceites simultâneos não dupliquem o pedido; chave de idempotência em pedido, pagamento e notificações. Sem resposta, reofertar. Se prestador perder sinal, confirmar estado ao reconectar e não permitir aceitar oferta expirada. Após cancelamento/rejeição, recomputar preço/ETA antes de reatribuir se houver mudança material, informando cliente.
 
@@ -106,6 +106,8 @@ Usar **bloqueio transacional no servidor** para que dois aceites simultâneos n�
 ## 10. Preço, cobrança e repasse
 
 **Preço sugerido por categoria:** taxa base + deslocamento relevante + mão de obra + adicionais explícitos de horário/complexidade + quilometragem do guincho + pedágios/peças (quando aplicáveis) − desconto. Definir tetos, preço mínimo, raio e componentes antes do piloto com prestadores reais. Mostrar **total ao cliente** e **valor líquido estimado ao prestador** antes dos respectivos aceites. Sem preço inventado em tela.
+
+**Hipótese inicial de preço para testar na rua, não preço de mercado comprovado:** troca simples pelo estepe, com todas as ferramentas do cliente e ajudante em rota curta, **R$ 69 ao cliente**; se o ajudante precisa levar macaco/chave, **R$ 89**. Em ambos os casos, o valor final depende de distância por rota, horário e custos acordados; até 10 km é raio de notificação, não promessa de cobrar a mesma quantia em todo esse raio. O relato de R$ 40 se refere a uma borracharia fixa; uma oferta pública de atendimento móvel em São Paulo anuncia troca pelo estepe a partir de R$ 120. Assim, R$ 69/89 é um **teste comercial abaixo daquela referência**, sujeito à aceitação de ajudantes e sustentabilidade da plataforma, não uma média. Exemplo transparente: se a comissão piloto fosse 15%, em R$ 69 o repasse bruto seria R$ 58,65 e a plataforma teria R$ 10,35 antes de custo de pagamento, impostos, suporte e reembolso. Comissão e mínimos serão definidos após entrevistar prestadores. Se não houver quem aceite pelo preço, informar preço/alternativa ao cliente em vez de anunciar valor inviável.
 
 Guincho precisa definir destino antes de cotar; limite de km, espera, pedágio, guarda e mudança de destino entram em contrato. Peça física exige estoque/preço/garantia e aceite separado. Reserva de pagamento, captura, estorno, fraude, chargeback, conciliação, repasse e emissão de comprovantes ficam em backend; app nunca armazena segredo de pagamento. Escolher provedor com suporte real ao modelo de marketplace PF/PJ e validar obrigações fiscais. O Mercado Pago documenta split 1:1 no Brasil; viabilidade exata para o formato do SUPRT depende de análise da integração e contrato. Pagamento em dinheiro só se houver processo seguro de cobrança da taxa e reconciliação; recomendação para piloto: pagamento digital.
 
@@ -146,9 +148,9 @@ Microtexto deve ser direto: “Onde seu carro está?”, “Você tem estepe?”
 
 ## 14. Fases e critérios de lançamento
 
-**Fase 0 — validação (antes de construir tudo):** entrevistar clientes que sofreram pane e 10–20 prestadores em uma área piloto; mapear preço real, disponibilidade, documentos, horário, tempo de deslocamento e interesse em repasse. Definir quem assume pagamento/nota e responsabilidade.
+**Fase 0 — validação (antes de construir tudo):** entrevistar clientes que sofreram pane e 10–20 potenciais ajudantes/prestadores em Brasilândia, Zona Leste e entorno da Vila Mariana, confirmando os bairros prioritários com os três integrantes; mapear preço real, disponibilidade, documentos, horário, tempo de deslocamento e interesse em repasse. Definir quem assume pagamento/nota e responsabilidade.
 
-**Fase 1 — piloto funcional:** identidade/contas, triagem de pneu e bateria, localização, cobertura limitada, preço fixo tabelado por região/categoria, cadastro/aprovação de PF/PJ, disponibilidade, despacho e aceite atômico, push, ETA, pagamento digital, checklist, cancelamento, suporte operacional e logs. Adicionar guincho apenas com compatibilidade, destino e preço por km completamente resolvidos; pode entrar em 1B.
+**Fase 1 — piloto funcional:** identidade/contas, fluxo de pneu de poucos toques, perguntas sobre estepe cheio/macaco/chave de roda, localização, descoberta em raio inicial de 10 km no município de São Paulo, preço claro por região/distância/categoria, cadastro/aprovação de PF/PJ, disponibilidade voluntária, despacho e aceite atômico, push, ETA, pagamento digital, checklist, cancelamento, suporte operacional e logs. Bateria entra após testar capacidade de quem tem equipamento. Garantir densidade de oferta nas zonas divulgadas antes de divulgar promessa de rapidez. Adicionar guincho apenas com compatibilidade, destino e preço por km completamente resolvidos; pode entrar em 1B.
 
 **Fase 2 — robustez:** guincho completo, rotas dinâmicas, alteração de escopo e cobrança complementar, rastreamento mais frequente, antifraude, disputa/estorno, reatribuição automática e painel de métricas.
 
@@ -160,7 +162,7 @@ Microtexto deve ser direto: “Onde seu carro está?”, “Você tem estepe?”
 
 Medir: pedidos iniciados e confirmados, cobertura, tempo até primeiro aceite, taxa de aceite, ETA previsto versus real, cancelamento por etapa, conclusão, reembolso, satisfação, receita líquida por pedido e ganho/hora do prestador. Não fixar SLA antes do piloto; definir metas após linha de base.
 
-**Decisões que precisam de validação do fundador e especialistas:** cidade/bairros exatos; categorias na abertura; tabela de preços e comissão; política de cancelamento; responsabilidades por danos e seguro; elegibilidade PF e documentação por serviço; provedor de pagamento e mapa; atendimento humano e horário real; nomenclatura “SUPRT” e marca; política fiscal/jurídica e proteção de dados. Estas escolhas não impedem prototipagem e testes internos, mas impedem prometer operação comercial completa.
+**Decisões que precisam de validação do fundador e especialistas:** bairros de divulgação e responsáveis por zona; se o raio aumenta além de 10 km e quando; categorias na abertura; tabela de preços e comissão; política de cancelamento; responsabilidades por danos e seguro; elegibilidade PF e documentação por serviço; provedor de pagamento e mapa; atendimento humano e horário real; nomenclatura “SUPRT” e marca; política fiscal/jurídica e proteção de dados. Estas escolhas não impedem prototipagem e testes internos, mas impedem prometer operação comercial completa.
 
 ## Fontes consultadas
 
@@ -174,3 +176,5 @@ Medir: pedidos iniciados e confirmados, cobertura, tempo até primeiro aceite, t
 - [Mercado Pago — split 1:1 para marketplace](https://www.mercadopago.com.br/developers/pt/docs/split-payments/split-1-1/overview)
 - [Governo federal — ocupação guincheiro MEI](https://www.gov.br/empresas-e-negocios/pt-br/empreendedor/quero-ser-mei/atividades-permitidas/g)
 - [ANPD — titular de dados e geolocalização](https://www.gov.br/anpd/pt-br/assuntos/titular-de-dados)
+
+- [Resgatou — exemplo público de preço móvel em São Paulo](https://resgatou.com.br/borracharia)
