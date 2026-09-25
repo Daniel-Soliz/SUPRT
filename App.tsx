@@ -3,12 +3,14 @@ import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StatusBar, StyleShe
 import type { User } from '@supabase/supabase-js';
 import { supabase } from './src/supabase';
 import * as Location from 'expo-location';
+import ProviderView from './src/ProviderView';
 
-type Service = 'Pneu furado' | 'Bateria' | 'Guincho' | 'Outro suporte';
+type Service = 'Pneu furado' | 'Bateria' | 'Calibragem' | 'Guincho' | 'Outro suporte';
 type Screen = 'home' | 'request' | 'history' | 'provider';
 const services: { name: Service; icon: string; desc: string }[] = [
   { name: 'Pneu furado', icon: '◉', desc: 'Troca, reparo ou calibragem' },
   { name: 'Bateria', icon: 'ϟ', desc: 'Partida auxiliar com cabos ou auxiliar de partida' },
+  { name: 'Calibragem', icon: '◎', desc: 'Ar para pneu murcho' },
   { name: 'Guincho', icon: '↗', desc: 'Remoção do veículo' },
   { name: 'Outro suporte', icon: '+', desc: 'Conte o que aconteceu' },
 ];
@@ -24,7 +26,10 @@ export default function App() {
   const [service, setService] = useState<Service>('Pneu furado');
   const [detail, setDetail] = useState('');
   const [spare, setSpare] = useState<'sim' | 'não' | null>(null);
-  const [tools, setTools] = useState<'sim' | 'não' | null>(null);
+  const [spareInflated, setSpareInflated] = useState<'sim' | 'não' | 'não sei' | null>(null);
+  const [jack, setJack] = useState<'sim' | 'não' | null>(null);
+  const [wrench, setWrench] = useState<'sim' | 'não' | null>(null);
+  const tools = jack && wrench ? (jack === 'sim' && wrench === 'sim' ? 'sim' : 'não') : null;
   const [batterySymptom, setBatterySymptom] = useState('');
   const [vehicleType, setVehicleType] = useState('');
   const [hasCables, setHasCables] = useState<'sim' | 'não' | null>(null);
@@ -38,6 +43,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
+  const [assignedNames, setAssignedNames] = useState<Record<string, string>>({});
   useEffect(() => {
     if (!supabase) return;
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -81,24 +87,37 @@ export default function App() {
     if (error) Alert.alert('Não foi possível acessar', error.message);
     else if (create) Alert.alert('Conta criada', 'Confirme seu e-mail se o projeto exigir confirmação.');
   }
+  useEffect(() => {
+    if (screen !== 'history' || !user) return;
+    loadOrders();
+    const timer = setInterval(loadOrders, 15000);
+    const channel = supabase?.channel(`customer-requests-${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'service_requests', filter: `customer_id=eq.${user.id}` }, loadOrders)
+      .subscribe();
+    return () => { clearInterval(timer); if (channel && supabase) supabase.removeChannel(channel); };
+  }, [screen, user?.id]);
   async function loadOrders() {
     if (!supabase || !user) return;
-    const { data, error } = await supabase.from('service_requests').select('id,service,details,status,address,created_at').eq('customer_id', user.id).order('created_at', { ascending: false });
-    if (error) Alert.alert('Erro ao carregar pedidos', error.message); else setOrders(data ?? []);
+    const { data, error } = await supabase.from('service_requests').select('id,service,details,status,address,created_at,price_cents,assigned_provider_id').eq('customer_id', user.id).order('created_at', { ascending: false });
+    if (error) Alert.alert('Erro ao carregar pedidos', error.message); else { setOrders(data ?? []); const active = (data ?? []).filter((row: any) => row.assigned_provider_id && ['aceito','a_caminho','chegou','em_servico'].includes(row.status)); const results = await Promise.all(active.map(async (row: any) => ({ id: row.id, result: await supabase!.rpc('get_assigned_provider', { p_request_id: row.id }) }))); setAssignedNames(Object.fromEntries(results.map(({ id, result }) => [id, result.data?.[0]?.display_name ?? 'Ajudante atribuído']))); }
   }
   async function submit() {
     if (!user) return Alert.alert('Entre na sua conta', 'Faça login para solicitar atendimento.');
-    if (!address.trim() || !detail.trim() || !phone.trim()) return Alert.alert('Informações incompletas', 'Informe o endereço, telefone e os detalhes do problema.');
-    if (service === 'Pneu furado' && (!spare || !tools)) return Alert.alert('Informe se possui estepe, macaco e chave de roda.');
+    if (!address.trim() || !phone.trim()) return Alert.alert('Informações incompletas', 'Informe o endereço e um telefone de contato.');
+    if (service === 'Pneu furado' && (!spare || !spareInflated || !jack || !wrench)) return Alert.alert('Informe se possui estepe, se está cheio, macaco e chave de roda.');
     if (service === 'Bateria' && (!batterySymptom.trim() || !vehicleType.trim() || !hasCables)) return Alert.alert('Informe o sintoma, tipo de veículo e se tem cabos.');
+    if (!coordinates) return Alert.alert('Confirme o ponto pelo GPS', 'Neste piloto a busca de ajudantes em até 10 km precisa da sua posição. O endereço digitado serve como referência adicional.');
+    if (service === 'Guincho' || service === 'Outro suporte') return Alert.alert('Orçamento em preparação', 'Este tipo de serviço ainda não tem preço e despacho definidos.');
     if (!supabase) return Alert.alert('Conexão pendente', 'Configure o Supabase antes de solicitar ajuda.');
     setLoading(true);
-    const { error } = await supabase.from('service_requests').insert({ customer_id: user.id, service, details: service === 'Bateria' ? `Sintoma: ${batterySymptom.trim()}; veículo: ${vehicleType.trim()}; cliente tem cabos: ${hasCables}; observações: ${detail.trim()}` : detail.trim(), address: address.trim(), location_lat: coordinates?.latitude ?? null, location_lng: coordinates?.longitude ?? null, contact_phone: phone.trim(), has_spare: service === 'Pneu furado' ? spare === 'sim' : null, has_tools: service === 'Pneu furado' ? tools === 'sim' : null });
+    const { error } = await supabase.from('service_requests').insert({ customer_id: user.id, service, details: service === 'Bateria' ? `Sintoma: ${batterySymptom.trim()}; veículo: ${vehicleType.trim()}; cliente tem cabos: ${hasCables}; observações: ${detail.trim()}` : service === 'Pneu furado' ? `Estepe: ${spare}; estepe cheio: ${spareInflated}; macaco: ${jack}; chave de roda: ${wrench}; observações: ${detail.trim()}` : detail.trim() || 'Pneu murcho; confirmar se há dano antes de calibrar.', address: address.trim(), location_lat: coordinates?.latitude ?? null, location_lng: coordinates?.longitude ?? null, contact_phone: phone.trim(), has_spare: service === 'Pneu furado' ? spare === 'sim' : null, has_tools: service === 'Pneu furado' ? tools === 'sim' : null });
     setLoading(false);
     if (error) return Alert.alert('Pedido não enviado', error.message);
-    Alert.alert('Pedido registrado', 'Estamos preparando a próxima etapa do atendimento.');
+    Alert.alert('Pedido de teste registrado', 'Veja o status em Meus pedidos. Ainda não há cobrança ou garantia de prestador disponível.');
     setScreen('history'); loadOrders();
   }
+  if (screen === 'provider') return <SafeAreaView style={s.root}><ProviderView user={user} onBack={() => setScreen('home')} /></SafeAreaView>;
+  const quote = service === 'Pneu furado' && spare === 'sim' ? (tools === 'sim' ? 69 : tools === 'não' ? 89 : null) : service === 'Bateria' ? 79 : service === 'Calibragem' ? 59 : null;
   return <SafeAreaView style={s.root}><StatusBar barStyle="dark-content" /><ScrollView contentContainerStyle={s.page}>
     <View style={s.top}><Text style={s.logo}>SUPRT<Text style={{ color: C.blue }}>●</Text></Text><TouchableOpacity onPress={() => user ? (setScreen('history'), loadOrders()) : Alert.alert('Entre na sua conta', 'Escolha um serviço para criar sua conta.')}><Text style={s.topRight}>◎ Meus pedidos</Text></TouchableOpacity></View>
     {screen === 'home' && <>
@@ -113,15 +132,14 @@ export default function App() {
       <TouchableOpacity style={s.providerLink} onPress={() => setScreen('provider')}><Text style={s.providerLinkText}>Quer prestar serviços? Conheça o SUPRT  →</Text></TouchableOpacity>
     </>}
     {screen === 'request' && <><TouchableOpacity onPress={() => setScreen('home')}><Text style={s.back}>‹ Voltar</Text></TouchableOpacity><Text style={s.heading}>Solicitar {service.toLowerCase()}</Text><Text style={s.sub}>Esses detalhes ajudam o prestador a levar o equipamento certo.</Text>
-      {service === 'Pneu furado' && <><Text style={s.label}>Você tem estepe?</Text><View style={s.row}>{(['sim', 'não'] as const).map(v => <TouchableOpacity key={v} onPress={() => setSpare(v)} style={[s.choice, spare === v && s.selected]}><Text style={s.choiceText}>{v === 'sim' ? 'Sim, tenho' : 'Não tenho'}</Text></TouchableOpacity>)}</View><Text style={s.label}>Você tem macaco e chave de roda?</Text><View style={s.row}>{(['sim', 'não'] as const).map(v => <TouchableOpacity key={v} onPress={() => setTools(v)} style={[s.choice, tools === v && s.selected]}><Text style={s.choiceText}>{v === 'sim' ? 'Sim' : 'Não'}</Text></TouchableOpacity>)}</View></>}
+      {service === 'Pneu furado' && <><Text style={s.label}>Você tem estepe?</Text><View style={s.row}>{(['sim', 'não'] as const).map(v => <TouchableOpacity key={v} onPress={() => setSpare(v)} style={[s.choice, spare === v && s.selected]}><Text style={s.choiceText}>{v === 'sim' ? 'Sim, tenho' : 'Não tenho'}</Text></TouchableOpacity>)}</View><Text style={s.label}>Seu estepe está cheio?</Text><View style={s.row}>{(['sim', 'não', 'não sei'] as const).map(v => <TouchableOpacity key={v} onPress={() => setSpareInflated(v)} style={[s.choice, spareInflated === v && s.selected]}><Text style={s.choiceText}>{v}</Text></TouchableOpacity>)}</View><Text style={s.label}>Você tem macaco?</Text><View style={s.row}>{(['sim', 'não'] as const).map(v => <TouchableOpacity key={v} onPress={() => setJack(v)} style={[s.choice, jack === v && s.selected]}><Text style={s.choiceText}>{v}</Text></TouchableOpacity>)}</View><Text style={s.label}>Você tem chave de roda?</Text><View style={s.row}>{(['sim', 'não'] as const).map(v => <TouchableOpacity key={v} onPress={() => setWrench(v)} style={[s.choice, wrench === v && s.selected]}><Text style={s.choiceText}>{v}</Text></TouchableOpacity>)}</View></>}
       {service === 'Bateria' && <><Field title="O que acontece ao tentar ligar?" value={batterySymptom} onChangeText={setBatterySymptom} placeholder="Ex.: painel acende, motor não dá partida" /><Field title="Tipo e modelo do veículo" value={vehicleType} onChangeText={setVehicleType} placeholder="Ex.: carro convencional, modelo e ano" /><Text style={s.label}>Você tem cabos para a partida auxiliar?</Text><View style={s.row}>{(['sim', 'não'] as const).map(v => <TouchableOpacity key={v} onPress={() => setHasCables(v)} style={[s.choice, hasCables === v && s.selected]}><Text style={s.choiceText}>{v === 'sim' ? 'Sim, tenho' : 'Não tenho'}</Text></TouchableOpacity>)}</View><Text style={s.sub}>A pessoa que aceitar precisa ter uma fonte de partida compatível. Se o veículo for híbrido ou elétrico, o atendimento exige avaliação especializada.</Text></>}
       <Field title="Detalhes do problema" value={detail} onChangeText={setDetail} placeholder="Ex.: Quero trocar o pneu furado pelo estepe" /><Field title="Onde você está?" value={address} onChangeText={editAddress} placeholder="Rua, número e ponto de referência" /><TouchableOpacity accessibilityRole="button" disabled={locating} onPress={useMyLocation} style={s.gpsButton}><Text style={s.gpsText}>{locating ? 'Localizando...' : '⌖ Usar minha localização'}</Text></TouchableOpacity>{!!locationMessage && <Text style={s.locationFeedback}>{locationMessage}</Text>}<Field title="Telefone de contato" value={phone} onChangeText={setPhone} placeholder="DDD + número" />
-      <View style={s.note}><Text style={s.noteTitle}>Valor e disponibilidade</Text><Text style={s.noteCopy}>O cálculo do preço e o envio a prestadores próximos precisam ser configurados antes da operação. Nenhuma cobrança é feita nesta etapa.</Text></View>
+      <View style={s.note}><Text style={s.noteTitle}>{quote ? `Preço de teste: R$ ${quote}` : 'Orçamento ainda indisponível'}</Text><Text style={s.noteCopy}>{quote ? 'Valor calculado para este teste. O ajudante precisa estar aprovado, disponível e a até 10 km. Pagamento e repasse ainda não estão integrados.' : 'Precisamos confirmar o serviço e um preço antes de abrir esta categoria.'}</Text></View>
       {!user && <View style={s.auth}><Text style={s.label}>Acesse para enviar o pedido</Text><Field title="E-mail" value={email} onChangeText={setEmail} placeholder="voce@exemplo.com" /><Field title="Senha" value={password} onChangeText={setPassword} placeholder="Sua senha" /><Button label="Entrar" onPress={() => signIn(false)} disabled={loading} /><Button secondary label="Criar conta" onPress={() => signIn(true)} disabled={loading} /></View>}
-      <Button label={loading ? 'Aguarde...' : 'Registrar pedido'} onPress={submit} disabled={loading || !user} />
+      <Button label={loading ? 'Aguarde...' : 'Pedir ajuda (teste sem cobrança)'} onPress={submit} disabled={loading || !user || !quote} />
     </>}
-    {screen === 'history' && <><TouchableOpacity onPress={() => setScreen('home')}><Text style={s.back}>‹ Início</Text></TouchableOpacity><Text style={s.heading}>Meus pedidos</Text><Button secondary label="Atualizar" onPress={loadOrders} />{orders.length ? orders.map(o => <View style={s.order} key={o.id}><Text style={s.cardTitle}>{o.service}</Text><Text style={s.cardCopy}>{o.address}</Text><Text style={s.status}>Status: {o.status}</Text></View>) : <Text style={s.sub}>Nenhum pedido encontrado.</Text>}</>}
-    {screen === 'provider' && <><TouchableOpacity onPress={() => setScreen('home')}><Text style={s.back}>‹ Voltar</Text></TouchableOpacity><Text style={s.heading}>Trabalhe com o SUPRT</Text><Text style={s.sub}>Cadastro de profissionais e empresas, verificação de documentos, ofertas de atendimento e aceite de valores fazem parte da próxima etapa do aplicativo.</Text><View style={s.note}><Text style={s.noteTitle}>Em preparação</Text><Text style={s.noteCopy}>O recebimento de chamados ainda não está disponível. Esta tela não mostra pedidos reais.</Text></View></>}
+    {screen === 'history' && <><TouchableOpacity onPress={() => setScreen('home')}><Text style={s.back}>‹ Início</Text></TouchableOpacity><Text style={s.heading}>Meus pedidos</Text><Button secondary label="Atualizar" onPress={loadOrders} />{orders.length ? orders.map(o => <View style={s.order} key={o.id}><Text style={s.cardTitle}>{o.service}</Text><Text style={s.cardCopy}>{o.address}</Text><Text style={s.status}>Status: {({ procurando: 'Buscando ajudante', aceito: 'Ajudante aceitou', a_caminho: 'A caminho', chegou: 'Chegou ao local', em_servico: 'Em atendimento', concluido: 'Concluído', sem_prestador: 'Nenhum ajudante disponível', cancelado: 'Cancelado' } as Record<string,string>)[o.status] ?? o.status}</Text>{o.price_cents && <Text style={s.cardCopy}>Valor de teste: R$ {(o.price_cents / 100).toFixed(2).replace('.', ',')}</Text>}{assignedNames[o.id] && <Text style={s.cardCopy}>Ajudante: {assignedNames[o.id]}</Text>}{o.status === 'procurando' && <Button secondary label="Cancelar busca" onPress={async () => { if (!supabase) return; const { error } = await supabase.rpc('progress_service', { p_request_id: o.id, p_next_status: 'cancelado' }); if (error) Alert.alert('Falha ao cancelar', error.message); else loadOrders(); }} />}</View>) : <Text style={s.sub}>Nenhum pedido encontrado.</Text>}</>}
     {user && <TouchableOpacity style={s.footer} onPress={() => { setScreen('history'); loadOrders(); }}><Text style={s.footerText}>Meus pedidos</Text></TouchableOpacity>}
   </ScrollView>{loading && <ActivityIndicator style={s.loader} color={C.blue} />}</SafeAreaView>;
 }
