@@ -1,6 +1,6 @@
 # SUPRT — escopo de produto e operação
 
-**Versão 1.1 · 25 de setembro de 2026 · Município de São Paulo**  
+**Versão 1.2 · 25 de setembro de 2026 · Município de São Paulo**  
 **Status:** especificação proposta para decisão e desenvolvimento; não descreve funções já prontas.
 
 ## 1. Visão e promessa
@@ -24,14 +24,15 @@ Três superfícies do mesmo produto: **app do cliente**, **app ou modo do presta
 
 **Abrangência planejada:** todo o município de São Paulo, com uso nas diferentes zonas desde o início se houver ajudantes habilitados disponíveis. A divulgação inicial pode ser coordenada pelos três integrantes do projeto, incluindo Brasilândia, Zona Leste e a região da Vila Mariana; confirmar endereços e responsabilidades reais da equipe. Divulgação em uma zona não significa cobertura garantida nela: o app mostra disponibilidade efetiva conforme pessoas online, tipo de serviço e tempo de rota. Se ninguém puder atender, explicar isso imediatamente, ampliar a busca conforme regra e oferecer alternativa de suporte, sem prometer chegada impossível. A operação pode ser ativada por etapas para reduzir risco, mantendo o objetivo de cobertura municipal.
 
-**Lançamento:** troca do pneu pelo estepe do cliente, inclusive quando o próprio cliente fornece estepe, macaco e chave de roda; carga auxiliar de bateria por pessoa equipada; guincho de automóvel de passeio por profissional/empresa habilitado com destino informado. **Etapa posterior:** calibragem/reparo móvel de pneu, troca/fornecimento de bateria, pane seca, chaveiro automotivo, motos, utilitários, veículos elétricos e atendimentos programados. Cada serviço tem requisitos, limites e preço próprios. Não oferecer reparo em via perigosa quando o cenário exige remoção segura.
+**Serviços simples prioritários:** (1) troca do pneu pelo estepe do cliente, inclusive usando macaco e chave de roda do cliente; (2) **partida auxiliar/carga de bateria no local** com cabos e veículo de apoio adequado ou auxiliar de partida compatível trazidos pelo ajudante; (3) **calibragem de pneu no local** somente com compressor e manômetro adequados e quando o pneu estiver íntegro; dano/furo exige reparo especializado ou estepe. **Categoria especializada:** guincho de automóvel de passeio, com equipamento, documentação e destino informados. **Etapa posterior condicionada:** reparo de pneu, venda/troca de bateria, pane seca, chaveiro automotivo, motos, utilitários, veículos elétricos e agendamento. Pane seca e chaveiro exigem regras próprias de segurança, materiais, verificação de posse e viabilidade; não entrar como “qualquer vizinho atende”. Cada serviço tem requisitos, limites e preço próprios. Não oferecer reparo em via perigosa quando o cenário exige remoção segura.
 
 ### Perguntas condicionais do pedido
 
 | Tipo | Perguntas essenciais | Regra de compatibilidade |
 | --- | --- | --- |
 | Pneu | Qual roda? Apenas ar, reparo ou troca? Tem estepe? Sabe se o estepe está cheio/utilizável (sim/não/não sei)? Tem macaco? Tem chave de roda? Há parafuso antifurto e chave dele? Modelo/tamanho do veículo? Foto opcional? Local seguro? | Se não há estepe utilizável, não ofertar “troca pelo estepe”; indicar reparo móvel habilitado ou guincho. Se faltam ferramentas, oferecer apenas a ajudantes que declararam trazê-las. “Não sei” sobre a pressão não significa “cheio”: ajudante confirma condição antes de concluir. |
-| Bateria | Não dá partida? Luzes acendem? Precisa de carga auxiliar, diagnóstico ou bateria nova? Modelo/ano, tipo de bateria e posição/acesso? | Venda/troca de bateria exige estoque, preço da peça separado, compatibilidade e garantia. |
+| Bateria/partida auxiliar | Motor não liga? Painel/luzes acendem? Faz ruído ao tentar ligar? Veículo é convencional, híbrido ou elétrico? Cliente tem cabos? Há acesso seguro ao compartimento? Marca/modelo/ano e foto opcional? | Ajudante declara previamente se leva cabos e veículo compatível ou auxiliar de partida, e qual tipo de veículo atende. Cliente pode fornecer cabos, mas o ajudante ainda precisa de fonte adequada e saber executar. Híbrido/elétrico ou dano aparente são encaminhados a prestador especializado. Partida auxiliar não é diagnóstico nem garantia de que o carro permanecerá funcionando; se falhar, oferecer diagnóstico/guincho com novo preço aprovado. Venda/troca de bateria exige estoque, preço da peça separado, compatibilidade e garantia. |
+| Calibragem | Pneu apenas murcho ou visivelmente danificado? Qual roda? Sabe a pressão recomendada pelo fabricante? Há estepe? O veículo está em local seguro? | Somente ajudante com compressor/manômetro; se houver dano, não inflar como solução definitiva e indicar serviço adequado. |
 | Guincho | Veículo liga/anda? Câmbio, tração, peso, altura, rodas travadas, avaria/acidente? Origem, destino, acesso em garagem/subsolo e pessoas no local? | Confirmar tipo/capacidade de guincho, distância, pedágios, acessos e condições de segurança. |
 | Outros | Tipo de ocorrência, texto, fotos, localização e risco. | Triagem por operador; não roteamento automático de serviço desconhecido. |
 
@@ -150,7 +151,7 @@ Microtexto deve ser direto: “Onde seu carro está?”, “Você tem estepe?”
 
 **Fase 0 — validação (antes de construir tudo):** entrevistar clientes que sofreram pane e 10–20 potenciais ajudantes/prestadores em Brasilândia, Zona Leste e entorno da Vila Mariana, confirmando os bairros prioritários com os três integrantes; mapear preço real, disponibilidade, documentos, horário, tempo de deslocamento e interesse em repasse. Definir quem assume pagamento/nota e responsabilidade.
 
-**Fase 1 — piloto funcional:** identidade/contas, fluxo de pneu de poucos toques, perguntas sobre estepe cheio/macaco/chave de roda, localização, descoberta em raio inicial de 10 km no município de São Paulo, preço claro por região/distância/categoria, cadastro/aprovação de PF/PJ, disponibilidade voluntária, despacho e aceite atômico, push, ETA, pagamento digital, checklist, cancelamento, suporte operacional e logs. Bateria entra após testar capacidade de quem tem equipamento. Garantir densidade de oferta nas zonas divulgadas antes de divulgar promessa de rapidez. Adicionar guincho apenas com compatibilidade, destino e preço por km completamente resolvidos; pode entrar em 1B.
+**Fase 1 — piloto funcional:** identidade/contas, fluxo de pneu e partida auxiliar de poucos toques, perguntas sobre estepe cheio/macaco/chave de roda e sintomas de bateria/equipamento, localização, descoberta em raio inicial de 10 km no município de São Paulo, preço claro por região/distância/categoria, cadastro/aprovação de PF/PJ, disponibilidade voluntária, despacho e aceite atômico, push, ETA, pagamento digital, checklist, cancelamento, suporte operacional e logs. Partida auxiliar só é habilitada para ajudantes equipados e orientados; calibragem entra ao habilitar prestadores com compressor. Garantir densidade de oferta nas zonas divulgadas antes de divulgar promessa de rapidez. Adicionar guincho apenas com compatibilidade, destino e preço por km completamente resolvidos; pode entrar em 1B.
 
 **Fase 2 — robustez:** guincho completo, rotas dinâmicas, alteração de escopo e cobrança complementar, rastreamento mais frequente, antifraude, disputa/estorno, reatribuição automática e painel de métricas.
 
@@ -178,3 +179,5 @@ Medir: pedidos iniciados e confirmados, cobertura, tempo até primeiro aceite, t
 - [ANPD — titular de dados e geolocalização](https://www.gov.br/anpd/pt-br/assuntos/titular-de-dados)
 
 - [Resgatou — exemplo público de preço móvel em São Paulo](https://resgatou.com.br/borracharia)
+
+- [RAC — cuidados e limites de partida auxiliar](https://www.rac.co.uk/drive/advice/car-maintenance/how-to-jump-start-a-car/)
