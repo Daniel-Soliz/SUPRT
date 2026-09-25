@@ -7,7 +7,7 @@ type Service = 'Pneu furado' | 'Bateria' | 'Guincho' | 'Outro suporte';
 type Screen = 'home' | 'request' | 'history' | 'provider';
 const services: { name: Service; icon: string; desc: string }[] = [
   { name: 'Pneu furado', icon: '◉', desc: 'Troca, reparo ou calibragem' },
-  { name: 'Bateria', icon: 'ϟ', desc: 'Carga auxiliar ou substituição' },
+  { name: 'Bateria', icon: 'ϟ', desc: 'Partida auxiliar com cabos ou auxiliar de partida' },
   { name: 'Guincho', icon: '↗', desc: 'Remoção do veículo' },
   { name: 'Outro suporte', icon: '+', desc: 'Conte o que aconteceu' },
 ];
@@ -24,6 +24,9 @@ export default function App() {
   const [detail, setDetail] = useState('');
   const [spare, setSpare] = useState<'sim' | 'não' | null>(null);
   const [tools, setTools] = useState<'sim' | 'não' | null>(null);
+  const [batterySymptom, setBatterySymptom] = useState('');
+  const [vehicleType, setVehicleType] = useState('');
+  const [hasCables, setHasCables] = useState<'sim' | 'não' | null>(null);
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -55,9 +58,10 @@ export default function App() {
     if (!user) return Alert.alert('Entre na sua conta', 'Faça login para solicitar atendimento.');
     if (!address.trim() || !detail.trim() || !phone.trim()) return Alert.alert('Informações incompletas', 'Informe o endereço, telefone e os detalhes do problema.');
     if (service === 'Pneu furado' && (!spare || !tools)) return Alert.alert('Informe se possui estepe, macaco e chave de roda.');
+    if (service === 'Bateria' && (!batterySymptom.trim() || !vehicleType.trim() || !hasCables)) return Alert.alert('Informe o sintoma, tipo de veículo e se tem cabos.');
     if (!supabase) return Alert.alert('Conexão pendente', 'Configure o Supabase antes de solicitar ajuda.');
     setLoading(true);
-    const { error } = await supabase.from('service_requests').insert({ customer_id: user.id, service, details: detail.trim(), address: address.trim(), contact_phone: phone.trim(), has_spare: service === 'Pneu furado' ? spare === 'sim' : null, has_tools: service === 'Pneu furado' ? tools === 'sim' : null });
+    const { error } = await supabase.from('service_requests').insert({ customer_id: user.id, service, details: service === 'Bateria' ? `Sintoma: ${batterySymptom.trim()}; veículo: ${vehicleType.trim()}; cliente tem cabos: ${hasCables}; observações: ${detail.trim()}` : detail.trim(), address: address.trim(), contact_phone: phone.trim(), has_spare: service === 'Pneu furado' ? spare === 'sim' : null, has_tools: service === 'Pneu furado' ? tools === 'sim' : null });
     setLoading(false);
     if (error) return Alert.alert('Pedido não enviado', error.message);
     Alert.alert('Pedido registrado', 'Estamos preparando a próxima etapa do atendimento.');
@@ -73,6 +77,7 @@ export default function App() {
     </>}
     {screen === 'request' && <><TouchableOpacity onPress={() => setScreen('home')}><Text style={s.back}>‹ Voltar</Text></TouchableOpacity><Text style={s.heading}>Solicitar {service.toLowerCase()}</Text><Text style={s.sub}>Esses detalhes ajudam o prestador a levar o equipamento certo.</Text>
       {service === 'Pneu furado' && <><Text style={s.label}>Você tem estepe?</Text><View style={s.row}>{(['sim', 'não'] as const).map(v => <TouchableOpacity key={v} onPress={() => setSpare(v)} style={[s.choice, spare === v && s.selected]}><Text style={s.choiceText}>{v === 'sim' ? 'Sim, tenho' : 'Não tenho'}</Text></TouchableOpacity>)}</View><Text style={s.label}>Você tem macaco e chave de roda?</Text><View style={s.row}>{(['sim', 'não'] as const).map(v => <TouchableOpacity key={v} onPress={() => setTools(v)} style={[s.choice, tools === v && s.selected]}><Text style={s.choiceText}>{v === 'sim' ? 'Sim' : 'Não'}</Text></TouchableOpacity>)}</View></>}
+      {service === 'Bateria' && <><Field title="O que acontece ao tentar ligar?" value={batterySymptom} onChangeText={setBatterySymptom} placeholder="Ex.: painel acende, motor não dá partida" /><Field title="Tipo e modelo do veículo" value={vehicleType} onChangeText={setVehicleType} placeholder="Ex.: carro convencional, modelo e ano" /><Text style={s.label}>Você tem cabos para a partida auxiliar?</Text><View style={s.row}>{(['sim', 'não'] as const).map(v => <TouchableOpacity key={v} onPress={() => setHasCables(v)} style={[s.choice, hasCables === v && s.selected]}><Text style={s.choiceText}>{v === 'sim' ? 'Sim, tenho' : 'Não tenho'}</Text></TouchableOpacity>)}</View><Text style={s.sub}>A pessoa que aceitar precisa ter uma fonte de partida compatível. Se o veículo for híbrido ou elétrico, o atendimento exige avaliação especializada.</Text></>}
       <Field title="Detalhes do problema" value={detail} onChangeText={setDetail} placeholder="Ex.: Quero trocar o pneu furado pelo estepe" /><Field title="Onde você está?" value={address} onChangeText={setAddress} placeholder="Rua, número e ponto de referência" /><Field title="Telefone de contato" value={phone} onChangeText={setPhone} placeholder="DDD + número" />
       <View style={s.note}><Text style={s.noteTitle}>Valor e disponibilidade</Text><Text style={s.noteCopy}>O cálculo do preço e o envio a prestadores próximos precisam ser configurados antes da operação. Nenhuma cobrança é feita nesta etapa.</Text></View>
       {!user && <View style={s.auth}><Text style={s.label}>Acesse para enviar o pedido</Text><Field title="E-mail" value={email} onChangeText={setEmail} placeholder="voce@exemplo.com" /><Field title="Senha" value={password} onChangeText={setPassword} placeholder="Sua senha" /><Button label="Entrar" onPress={() => signIn(false)} disabled={loading} /><Button secondary label="Criar conta" onPress={() => signIn(true)} disabled={loading} /></View>}
