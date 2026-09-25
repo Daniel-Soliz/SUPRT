@@ -60,7 +60,7 @@ export default function App() {
     setLocationMessage('Obtendo sua localização...');
     try {
       const permission = await Location.requestForegroundPermissionsAsync();
-      if (permission.status !== 'granted') { setLocationMessage('Permissão recusada. Você pode digitar o endereço.'); return; }
+      if (permission.status !== 'granted') { setLocationMessage('Permissão recusada. O piloto precisa do GPS para buscar ajudantes.'); return; }
       const result = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
       const point = { latitude: result.coords.latitude, longitude: result.coords.longitude };
       setCoordinates(point);
@@ -75,7 +75,7 @@ export default function App() {
         setLocationMessage('GPS obtido. Digite a rua, o número e uma referência para confirmar o ponto.');
       }
     } catch {
-      setLocationMessage('Não foi possível usar o GPS agora. Digite o endereço manualmente.');
+      setLocationMessage('Não foi possível usar o GPS. Tente novamente para buscar ajudantes próximos.');
     } finally { setLocating(false); }
   }
   async function signIn(create: boolean) {
