@@ -12,7 +12,7 @@ A URL e a chave **pública** do projeto SUPRT estão em `src/supabase.ts`. Nunca
 
 ## Estado implementado no banco SUPRT
 
-- Conta com Supabase Auth; pedidos do cliente com GPS opcional e endereço de referência; histórico e status.
+- Conta com Supabase Auth; pedidos do cliente com GPS obrigatório para busca próxima e endereço de referência; histórico e status.
 - Cadastro inicial de ajudantes PF/PJ com serviços e equipamentos declarados. A aprovação documental é **manual**, fora do app; cadastros pendentes não recebem pedidos.
 - Ao criar um pedido elegível com GPS, o servidor calcula preço de **teste**, encontra até cinco ajudantes aprovados/disponíveis com localização recente a até 10 km e cria ofertas. Sem posição ou oferta elegível, marca `sem_prestador`.
 - Perfil do ajudante pode ficar disponível após aprovação; localização expira para despacho após dez minutos. Tela recebe ofertas em tempo real com polling como reserva; aceite é transacional e exclusivo. Prestador atualiza a sequência de estados; cliente acompanha status e o nome de quem aceitou.
