@@ -23,6 +23,16 @@
     },
     "experiments": {
       "baseUrl": "/SUPRT"
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Permita que o SUPRT use sua localização para identificar onde está o veículo ao pedir ajuda.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ]
+    ]
   }
 }
