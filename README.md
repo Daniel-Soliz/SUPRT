@@ -5,8 +5,8 @@ Primeira versão do aplicativo de suporte automotivo, feita com Expo/React Nativ
 ## Rodar
 
 1. Instale Node.js e execute `npm install`.
-2. Copie `.env.example` para `.env` e preencha a URL e a chave **publishable** do projeto Supabase exclusivo do SUPRT. Nunca use uma secret/service_role key no app.
-3. Execute a migração SQL em `supabase/schema.sql` no projeto correto.
+2. O aplicativo já aponta para o projeto Supabase exclusivo do SUPRT usando URL e chave pública. Se necessário, copie `.env.example` para `.env` para substituir esses valores localmente. Nunca use uma secret/service_role key no app.
+3. A migração em `supabase/schema.sql` já foi aplicada ao projeto SUPRT.
 4. Execute `npm start` e abra o app no Expo Go ou em um build de desenvolvimento.
 
 ## Estado atual
